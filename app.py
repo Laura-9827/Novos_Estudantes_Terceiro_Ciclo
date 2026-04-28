@@ -380,28 +380,31 @@ def render_charts(df: pd.DataFrame) -> None:
             age_bucket = pd.cut(df["RESPONDENT_AGE"], bins=age_bins, labels=age_labels, right=True, include_lowest=True)
             age_counts = age_bucket.value_counts().reindex(age_labels).fillna(0).reset_index()
             age_counts.columns = ["Escalão etário", "Respostas"]
-            age_counts["Percentagem"] = (age_counts["Respostas"] / age_counts["Respostas"].sum() * 100).round(1)
-            age_counts["TextoPerc"] = age_counts["Percentagem"].astype(str) + "%"
+            age_counts["Percentagem"] = age_counts["Respostas"] / age_counts["Respostas"].sum() * 100
+            age_counts["PercentagemTexto"] = age_counts["Percentagem"].round(1)
+            age_counts = age_counts.sort_values("Percentagem", ascending=True)
+            age_counts["TextoPerc"] = age_counts["PercentagemTexto"].astype(str) + "%"
             age_fig = px.bar(
                 age_counts,
-                x="Escalão etário",
-                y="Respostas",
+                x="Percentagem",
+                y="Escalão etário",
                 text="TextoPerc",
-                color="Respostas",
+                color="Percentagem",
+                orientation="h",
                 color_continuous_scale=["#dbeafe", "rgb(0,0,255)"],
                 title="Distribuição por escalão etário",
             )
             age_fig.update_traces(
                 textposition="outside",
-                customdata=age_counts[["Respostas", "Percentagem"]],
-                hovertemplate="<b>%{x}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
+                customdata=age_counts[["Respostas", "PercentagemTexto"]],
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             age_fig.update_layout(
                 margin=dict(l=0, r=0, t=50, b=0),
                 coloraxis_showscale=False,
                 xaxis_title="",
                 yaxis_title="",
-                yaxis=dict(range=[0, 100]),
+                xaxis=dict(range=[0, 100]),
                 font=dict(size=11),
             )
             st.plotly_chart(age_fig, use_container_width=True)
