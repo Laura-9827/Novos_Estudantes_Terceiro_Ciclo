@@ -1,0 +1,155 @@
+Inquérito aos Novos Alunos do 3º. Ciclo – 2025/2026 – Guião
+Todos os anos, o Iscte procura conhecer os seus novos estudantes. Os inquéritos ajudam-nos a melhorar a qualidade do ensino e da aprendizagem. Contamos com a sua opinião para melhorar!
+1.1. Qual é o seu género?
+Feminino – 1
+Masculino – 2
+Outra identificação - 3
+1.2. Vai iniciar o doutoramento imediatamente a seguir ao último grau que obteve?
+Sim – 1
+Não – 2
+1.3. Formalizou uma candidatura ao Concurso Bolsas de Doutoramento 2025 – Linha de Candidatura Geral, para obtenção de uma Bolsa de Investigação FCT?
+Sim – 1
+Não – 2
+1.4. No processo de candidatura ao doutoramento, formalizou manifestação de interesse em usufruir de uma bolsa de mérito?
+Sim – 1
+Não, mas pondero vir a manifestar interesse – 2
+Não pondero vir a manifestar interesse – 3
+1.5. [filtro para “não pondero vir a manifestar interesse”] Indique, no espaço em baixo, porque é que não pondera vir a manifestar interesse em usufruir de uma bolsa de mérito.
+1.6. Qual é a sua situação profissional/ocupacional?
+Empregado/a por conta própria – 1
+Estudante – 2
+Empregado/a por conta de outrem – 3
+Desempregado/a – 4
+Bolseiro/a de investigação – 5
+Outra situação – 6
+1.7. Caso tenha assinalado a opção de resposta "Outra situação" na questão anterior, indique-a, por favor, no espaço em baixo.
+1.8. [filtro para quem respondeu sim a “empregado/a por conta de outrem”] Qual é o setor profissional em que trabalha?
+Ensino Superior – 1
+Administração Pública – 2
+Empresa privada – 3
+Instituição privada sem fins lucrativos – 4
+Outro setor – 5.
+1.9. Caso tenha assinalado a opção de resposta "Outro setor" na questão anterior, indique-o, por favor, no espaço em baixo.
+1.10. [limite de 55 caracteres] Indique, por favor, o nome/designação da sua profissão (exemplos: Gestor de ciência, professor/a do ensino básico e secundário, arquiteto/a, jornalista, etc.).
+Motivações e Expectativas
+1.11. Quais os PRINCIPAIS MOTIVOS que o/a levaram a inscrever-se num doutoramento? (escolha até um máximo de 3 motivos)
+Quero seguir a carreira de docente no ensino superior – 1
+Quero trabalhar em investigação – 2
+Progressão na carreira profissional – 3
+Aprofundar conhecimentos numa área académica específica – 4
+Aprofundar conhecimentos para aplicar no contexto da minha atividade profissional – 5
+Realização pessoal – 6
+Obter mais um grau académico – 7
+Assegurar rendimento através da obtenção de uma bolsa de investigação – 8
+Adquirir formação e conhecimentos numa área diferente da minha área de formação – 9
+Fui encorajado/a pelo/a orientador/a da dissertação de mestrado ou coordenador/a de projeto de investigação – 10
+Aumentar as possibilidades de obter um emprego qualificado – 11
+Outro – 12
+1.12. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo.
+1.13. Em que medida cada um dos seguintes fatores foi importante para a escolha DO ISCTE? (responda, por favor, a todas as alíneas - incluindo a última alínea "Outro" - mesmo que seja apenas para afirmar que "não sabe/não se aplica", para que no fim consiga submeter o inquérito com sucesso através do botão "Confirmar").
+Escala de resposta para cada item:
+Nada importante – 1
+Pouco importante – 2
+Nem muito nem pouco importante – 3
+Importante – 4
+Muito importante – 5
+Não sabe/não se aplica – 66
+1.13.1. Prestígio do Iscte
+1.13.2. Oportunidades de financiamento e de colaboração no Iscte
+1.13.3. Realizei total ou parcialmente o meu percurso académico no Iscte
+1.13.4. O Iscte é a minha atual instituição de acolhimento
+1.13.5. Única instituição com o curso que pretendia
+1.13.6. Qualidade e nível de especialização do Iscte na área de estudos que pretendia desenvolver/aprofundar
+1.13.7. Reconhecimento da qualidade da investigação realizada no Iscte
+1.13.8. Qualidade científica do corpo docente
+1.13.9. Orientador/a pretendido/a pertence ao Iscte
+1.13.10. Boas instalações e infraestruturas
+1.13.11. Boas saídas profissionais
+1.13.12. Oportunidades de internacionalização e parcerias internacionais
+1.13.13. Desenvolvimento de redes de contactos e de competências ao nível do empreendedorismo
+1.13.14. Ambiente académico
+1.13.15. Ações de divulgação promovidas pelo Iscte
+1.13.16. Localização
+1.13.17. Recomendação de outras pessoas
+1.13.18. Outro
+1.14. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo.
+1.15. Em que medida cada um dos seguintes fatores foi importante para a escolha DO CURSO em que se inscreve no Iscte: (responda, por favor, a todas as alíneas - incluindo a última alínea "Outro" - mesmo que seja apenas para afirmar que "não sabe/não se aplica", para que no fim consiga submeter o inquérito com sucesso através do botão "Confirmar").
+Escala de resposta para cada item:
+Nada importante – 1
+Pouco importante – 2
+Nem muito nem pouco importante – 3
+Importante – 4
+Muito importante – 5
+Não sabe/não se aplica – 66
+1.15.1. Vocação/Interesse pela área do curso
+1.15.2. Continuidade do percurso académico
+1.15.3. Flexibilidade do plano de estudos do curso (refletida, por exemplo, na possibilidade de frequentar Unidades Curriculares optativas mais adequadas aos seus interesses de investigação)
+1.15.4. Componente teórica do curso
+1.15.5. Componente prática do curso
+1.15.6. Inglês como idioma principal
+1.15.7. Regime pós-laboral
+1.15.8. Prestígio do curso
+1.15.9. Qualidade científica do corpo docente
+1.15.10. Qualidadedade do centro de investigação associado ao programa doutoral
+1.15.11. Saídas profissionais do curso
+1.15.12. Perspetivas de internacionalização ou oportunidades de mobilidade no âmbito do curso
+1.15.13. Ações de divulgação promovidas pelo Iscte
+1.15.14. Recomendação de outras pessoas
+1.15.15. Outro
+1.16. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo.
+1.17. O projeto de tese de doutoramento que prevê vir a desenvolver está integrado num projeto mais alargado (por exemplo, na sua atividade profissional ou num projeto num centro de investigação)?
+Sim, está integrado na minha atividade profissional – 1
+Sim, está integrado num projeto de investigação a ser desenvolvido num centro de investigação – 2
+Não – 3
+Ainda não defini o tema da tese de doutoramento – 4
+1.18. Pensa concluir o curso no número de anos previsto?
+Sim – 1
+Não – 2
+1.19. Pretende usufruir do regime de tempo parcial?
+Sim – 1
+Não – 2
+1.20. Independentemente da sua resposta às questões anteriores, quais são os PRINCIPAIS FATORES que poderão afetar a finalização do seu curso de doutoramento no tempo previsto? (escolha até um máximo de 3 fatores)
+Dificuldade de conciliação com a vida pessoal/familiar
+Dificuldade de conciliação com a atividade profissional
+Área da minha formação de base é diferente da área de estudos do doutoramento
+Dificuldades económicas/financeiras
+Não ter um acompanhamento regular por parte do orientador da tese
+Desmotivação durante a realização do doutoramento
+Dificuldade em assegurar uma boa gestão do tempo
+Dificuldades metodológicas no desenvolvimento da investigação
+Falta de financiamento
+Não penso encontrar obstáculos que afetem a finalização do meu curso de doutoramento
+Outro
+1.21. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo
+1.22. Quais são os PRINCIPAIS FATORES que poderão contribuir para a finalização do seu curso no tempo previsto? (escolha até um máximo de 3 fatores)
+Regularidade e eficácia do acompanhamento por parte do orientador
+Possibilidade de realização de formação em competências transversais (ética na investigação, línguas estrangeiras, análise de dados, etc.)
+Possibilidade de realização de formação específica (gestão de referências bibliográficas, competências de escrita científica, etc.)
+Existência de um plano de trabalhos bem definido desde o início do doutoramento
+Definição clara de prazos e metas a cumprir em cada fase do doutoramento
+Disponibilização de serviços de apoio (por exemplo de apoio psicológico)
+Disponibilidade de recursos institucionais (espaços de trabalho, bibliotecas, acesso a software ou bases de dados)
+Reconhecimento do trabalho pela concessão de bolsa (interna ou externa)
+Reconhecimento do trabalho pela atribuição de prémios
+Participação em seminários de investigação e atividades científicas que promovam a integração e socialização
+Inserção em grupos de investigação e redes científicas nacionais e internacionais
+Oportunidades de participação em projetos ou publicações em coautoria
+Outro
+1.23. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo.
+Pedimos-lhe, agora, que pense um pouco nas expectativas sobre a sua situação profissional após o doutoramento.
+1.24. Qual das seguintes situações descritas em baixo corresponde à situação profissional em que julga vir a estar um ano após a conclusão do doutoramento? (pode escolher mais do que uma opção de resposta).
+Situação no emprego igual à situação atual
+Progressão de carreira/categoria profissional na atividade profissional atual
+Numa atividade profissional com funções mais ajustadas a um nível de qualificação mais elevado
+Numa atividade profissional mais relacionada com a área do doutoramento
+Outra situação
+1.25. Caso tenha assinalado a opção de resposta "Outra situação" na questão anterior, indique-a, por favor, no espaço em baixo.
+1.26. Qual é o setor de atividade profissional em que gostaria de trabalhar após o doutoramento?
+Ensino Superior
+Administração Pública
+Empresa privada
+Instituição privada sem fins lucrativos
+Outro
+1.27. Caso tenha assinalado a opção de resposta "Outro" na questão anterior, indique-o, por favor, no espaço em baixo.
+1.28. Especifique, de forma sucinta, qual o tipo de atividade profissional em que gostaria de trabalhar após o doutoramento.
+AGRADECEMOS A SUA PARTICIPAÇÃO!
