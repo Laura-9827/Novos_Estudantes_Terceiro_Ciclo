@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+_docx_text.txt
+_inspect_sources.py
+_source_report.txt
+~$*
