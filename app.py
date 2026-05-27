@@ -469,19 +469,21 @@ def render_charts(df: pd.DataFrame) -> None:
         nationality_counts = categorical_summary(df["NACIONALIDADE_1"], drop_missing=True).head(10)
         nationality_fig = px.bar(
             nationality_counts,
-            x="Respostas",
+            x="Percentagem",
             y="Categoria",
             orientation="h",
             color_discrete_sequence=["rgb(0,0,255)"],
             title="Principais nacionalidades",
         )
         nationality_fig.update_traces(
-            customdata=nationality_counts[["Percentagem"]],
-            hovertemplate="%{y}<br>N=%{x}<br>%{customdata[0]}<extra></extra>",
+            text=nationality_counts["Percentagem"].map(lambda value: f"{value:.1f}%"),
+            textposition="outside",
+            customdata=nationality_counts[["Respostas", "Percentagem"]],
+            hovertemplate="%{y}<br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
         )
         nationality_fig.update_layout(
             margin=dict(l=0, r=0, t=50, b=0),
-            xaxis_title="",
+            xaxis_title="Percentagem",
             yaxis_title="",
             font=dict(size=11),
         )
