@@ -217,8 +217,8 @@ def split_school_codes(value) -> list[str]:
 
 def school_options(df: pd.DataFrame) -> list[str]:
     codes = []
-    for value in df["ESCOLAS_CURSO"].dropna().astype(str):
-        codes.extend(split_school_codes(value))
+    for _, row in df[["NOME_CURSO", "ESCOLAS_CURSO"]].dropna(subset=["NOME_CURSO"]).iterrows():
+        codes.extend(schools_for_course(str(row["NOME_CURSO"]), row.get("ESCOLAS_CURSO")))
     return sorted({code for code in codes if code not in {"NA", "NAN"}})
 
 
@@ -372,7 +372,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 hovertemplate="<b>%{label}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), legend_title_text="", font=dict(size=12))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         with right:
             age_bins = [18, 24, 29, 34, 39, 44, 49, 59, 100]
@@ -407,35 +407,85 @@ def render_charts(df: pd.DataFrame) -> None:
                 xaxis=dict(range=[0, 100]),
                 font=dict(size=11),
             )
-            st.plotly_chart(age_fig, use_container_width=True)
+            st.plotly_chart(age_fig, width="stretch")
 
         st.markdown('<div class="section-title">Situação Profissional/Ocupacional</div>', unsafe_allow_html=True)
-        occupation_counts = categorical_summary(df["CONDICAO_PROFISSIONAL_ALUNO"], drop_missing=True)
-        occupation_counts["TextoPerc"] = occupation_counts["Percentagem"].astype(str) + "%"
-        fig = px.bar(
-            occupation_counts,
+        prof_left, prof_right = st.columns(2)
+        with prof_left:
+            occupation_counts = categorical_summary(df["CONDICAO_PROFISSIONAL_ALUNO"], drop_missing=True)
+            occupation_counts["TextoPerc"] = occupation_counts["Percentagem"].astype(str) + "%"
+            fig = px.bar(
+                occupation_counts,
+                y="Categoria",
+                x="Percentagem",
+                orientation="h",
+                text="TextoPerc",
+                color="Percentagem",
+                color_continuous_scale=["#dbeafe", "rgb(0,0,255)"],
+                title="Distribuição por situação profissional",
+            )
+            fig.update_traces(
+                textposition="outside",
+                customdata=occupation_counts[["Respostas", "Percentagem"]],
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+            )
+            fig.update_layout(
+                margin=dict(l=0, r=0, t=50, b=0),
+                coloraxis_showscale=False,
+                xaxis_title="%",
+                xaxis=dict(range=[0, 100]),
+                yaxis_title="",
+                font=dict(size=11),
+            )
+            st.plotly_chart(fig, width="stretch")
+
+        with prof_right:
+            sector_counts = code_counts(df[find_column(df, "1-8")], Q_18)
+            sector_counts["TextoPerc"] = sector_counts["Respostas"].map(lambda value: f"{value:.1f}")
+            fig = px.bar(
+                sector_counts,
+                y="Opção",
+                x="Respostas",
+                orientation="h",
+                text="TextoPerc",
+                color="Respostas",
+                color_continuous_scale=["#dbeafe", "rgb(0,0,255)"],
+                title="Distribuição por setor profissional",
+            )
+            fig.update_traces(
+                textposition="outside",
+                customdata=sector_counts[["Respostas"]],
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<extra></extra>"
+            )
+            fig.update_layout(
+                margin=dict(l=0, r=0, t=50, b=0),
+                coloraxis_showscale=False,
+                xaxis_title="Respostas",
+                yaxis_title="",
+                font=dict(size=11),
+            )
+            st.plotly_chart(fig, width="stretch")
+
+        nationality_counts = categorical_summary(df["NACIONALIDADE_1"], drop_missing=True).head(10)
+        nationality_fig = px.bar(
+            nationality_counts,
+            x="Respostas",
             y="Categoria",
-            x="Percentagem",
             orientation="h",
-            text="TextoPerc",
-            color="Percentagem",
-            color_continuous_scale=["#dbeafe", "rgb(0,0,255)"],
-            title="Distribuição por situação profissional",
+            color_discrete_sequence=["rgb(0,0,255)"],
+            title="Principais nacionalidades",
         )
-        fig.update_traces(
-            textposition="outside",
-            customdata=occupation_counts[["Respostas", "Percentagem"]],
-            hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+        nationality_fig.update_traces(
+            customdata=nationality_counts[["Percentagem"]],
+            hovertemplate="%{y}<br>N=%{x}<br>%{customdata[0]}<extra></extra>",
         )
-        fig.update_layout(
+        nationality_fig.update_layout(
             margin=dict(l=0, r=0, t=50, b=0),
-            coloraxis_showscale=False,
-            xaxis_title="%",
-            xaxis=dict(range=[0, 100]),
+            xaxis_title="",
             yaxis_title="",
             font=dict(size=11),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(nationality_fig, width="stretch")
 
         st.markdown('<div class="section-title">Aspetos do Doutoramento</div>', unsafe_allow_html=True)
         dout1, dout2, dout3 = st.columns(3)
@@ -461,7 +511,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         with dout2:
             q3_col = find_column(df, "1-3")
@@ -485,7 +535,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         with dout3:
             q4_col = find_column(df, "1-4")
@@ -509,7 +559,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
 
     with tab2:
@@ -535,7 +585,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 title="Principais motivos para iniciar o doutoramento",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis_title="Respostas", xaxis=dict(range=[0, 100]))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         st.caption("Os três primeiros motivos são destacados porque representam as categorias mais frequentes na amostra filtrada.")
 
@@ -550,7 +600,7 @@ def render_charts(df: pd.DataFrame) -> None:
             title="Fatores na escolha do Iscte",
         )
         fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 5]))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         q15_cols = [col for col in df.columns if col.startswith("1-15.")]
         q15 = mean_likert(df, q15_cols)
@@ -563,7 +613,7 @@ def render_charts(df: pd.DataFrame) -> None:
             title="Fatores na escolha do curso",
         )
         fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 5]))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         bottom_left, bottom_right = st.columns(2)
         q20_col = find_column(df, "1-20")
@@ -593,8 +643,8 @@ def render_charts(df: pd.DataFrame) -> None:
                 color_discrete_sequence=["rgb(0,0,255)"],
                 title="Fatores que podem afetar a finalização no tempo previsto",
             )
-            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 100]))
-            st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis_title="Respostas")
+            st.plotly_chart(fig, width="stretch")
 
         with bottom_right:
             q22_counts = code_counts(
@@ -623,8 +673,8 @@ def render_charts(df: pd.DataFrame) -> None:
                 color_discrete_sequence=["rgb(0,0,255)"],
                 title="Fatores que podem contribuir para concluir no tempo previsto",
             )
-            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 100]))
-            st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis_title="Respostas")
+            st.plotly_chart(fig, width="stretch")
 
     with tab4:
         q17_col = find_column(df, "1-17")
@@ -642,7 +692,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 title="Integração do projeto de tese",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         with top_right:
             q24_counts = code_counts(df[q24_col], Q_124)
@@ -655,28 +705,21 @@ def render_charts(df: pd.DataFrame) -> None:
                 title="Situação profissional um ano após o doutoramento",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 100]))
+            st.plotly_chart(fig, width="stretch")
+
+        bottom_left, bottom_right = st.columns(2)
         with bottom_left:
             q26_counts = code_counts(df[q26_col], Q_126)
             fig = px.bar(
                 q26_counts,
-                x="Opção",
-                y="Respostas",
+                x="Respostas",
+                y="Opção",
+                orientation="h",
                 color_discrete_sequence=["rgb(0,0,255)"],
                 title="Setor de atividade pretendido após o doutoramento",
             )
-            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), xaxis_title="", yaxis=dict(range=[0, 100]))
-            nationality_counts = categorical_summary(df["NACIONALIDADE_1"], drop_missing=True).head(10)
-            fig = px.bar(
-                nationality_counts,
-                x="Respostas",
-                y="Categoria",
-                orientation="h",
-                color_discrete_sequence=["rgb(0,0,255)"],
-                title="Principais nacionalidades",
-            )
-            fig.update_traces(customdata=nationality_counts[["Percentagem"]], hovertemplate="%{y}<br>N=%{x}<br>%{customdata[0]}<extra></extra>")
-            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), xaxis_title="", yaxis_title="", xaxis=dict(range=[0, 100]), font=dict(size=11))
-            st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), xaxis_title="", yaxis_title="")
+            st.plotly_chart(fig, width="stretch")
 
 
 def typical_profile(df: pd.DataFrame) -> dict[str, str]:
@@ -769,7 +812,7 @@ def main() -> None:
     selector_left, selector_right = st.columns(2)
     with selector_left:
         st.markdown('<div class="section-title">Seleção de Escola</div>', unsafe_allow_html=True)
-        selected_school = st.selectbox("", options=["Todas"] + schools, index=0, label_visibility="collapsed")
+        selected_school = st.selectbox("Escola", options=["Todas"] + schools, index=0, label_visibility="collapsed")
 
     selected_school_value = None if selected_school == "Todas" else selected_school
     courses = course_options(df, selected_school_value)
@@ -777,7 +820,7 @@ def main() -> None:
     with selector_right:
         st.markdown('<div class="section-title">Seleção de Curso</div>', unsafe_allow_html=True)
         if courses:
-            selected_course = st.selectbox("", options=["Todos"] + courses, index=0, label_visibility="collapsed")
+            selected_course = st.selectbox("Curso", options=["Todos"] + courses, index=0, label_visibility="collapsed")
         else:
             selected_course = "Todos"
 
