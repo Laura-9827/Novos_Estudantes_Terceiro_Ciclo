@@ -568,28 +568,40 @@ def render_charts(df: pd.DataFrame) -> None:
         q11_col = find_column(df, "1-11")
         motives = code_counts(df[q11_col], Q_111)
         motives = motives.copy()
-        motives["Percentagem"] = (motives["Respostas"] / motives["Respostas"].sum() * 100).round(1)
-        motives["Destaque"] = ["Top 3" if i < 3 else "Outros" for i in range(len(motives))]
-        top_motives = motives.head(3)
+        total_respondentes = int(df[q11_col].map(lambda value: bool(split_codes(value))).sum())
+        motives["Percentagem"] = (motives["Respostas"] / total_respondentes * 100).round(1) if total_respondentes else 0
+        motives["Destaque"] = ["Top" if i < 3 else "Outros" for i in range(len(motives))]
+        if len(motives) >= 3:
+            cutoff = motives.iloc[2]["Respostas"]
+            top_motives = motives[motives["Respostas"] >= cutoff].copy()
+        else:
+            top_motives = motives.copy()
         top_cols = st.columns(3)
-        for idx, (_, row) in enumerate(top_motives.iterrows()):
+        for idx, (_, row) in enumerate(top_motives.head(3).iterrows()):
             with top_cols[idx]:
-                metric_box(f"Top {idx + 1}", row["Opção"], f'{row["Respostas"]} respostas ({row["Percentagem"]}%)')
+                metric_box(f"Top {idx + 1}", row["Opção"], f'{row["Respostas"]} respondentes ({row["Percentagem"]}%)')
         left, right = st.columns([1.15, 0.85])
         with left:
+            motives_chart = motives.sort_values(["Percentagem", "Respostas"], ascending=[False, False]).reset_index(drop=True)
             fig = px.bar(
-                motives,
+                motives_chart,
                 y="Opção",
                 orientation="h",
-                x="Respostas",
+                x="Percentagem",
                 color="Destaque",
                 color_discrete_sequence=["rgb(0,0,255)", "#9ec5fe"],
                 title="Principais motivos para iniciar o doutoramento",
             )
-            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis_title="Respostas", xaxis=dict(range=[0, 100]))
+            fig.update_traces(
+                text=motives_chart["Percentagem"].map(lambda value: f"{value:.1f}%"),
+                textposition="outside",
+                customdata=motives_chart[["Respostas", "Percentagem"]],
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>% dos respondentes=%{customdata[1]}%<extra></extra>",
+            )
+            fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis_title="% dos respondentes", xaxis=dict(range=[0, 100]))
             st.plotly_chart(fig, width="stretch")
 
-        st.caption("Os três primeiros motivos são destacados porque representam as categorias mais frequentes na amostra filtrada.")
+        st.caption("Cada motivo é calculado como percentagem dos respondentes que assinalaram essa opção; se houver empate no corte, ele é preservado no resumo.")
 
         q13_cols = [col for col in df.columns if col.startswith("1-13.")]
         q13 = mean_likert(df, q13_cols)
