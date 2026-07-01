@@ -26,6 +26,12 @@ Se quiseres regenerar o ficheiro tratado manualmente:
 python tools/build_processed_data.py
 ```
 
+Se quiseres trocar para um novo ano letivo, copia primeiro o novo ficheiro bruto para `data/raw/` e, se necessário, gera logo o dataset tratado:
+
+```bash
+python tools/sync_raw_data.py "C:\\caminho\\para\\novo_ficheiro.xls" --rebuild
+```
+
 No dashboard, a navegação principal é feita no topo com dois seletores em cascata:
 
 - primeiro escolhe-se a Escola
@@ -40,6 +46,7 @@ Ao selecionar uma escola, os gráficos passam a refletir apenas os dados dessa e
 - `src/config/`: constantes e mapeamentos
 - `src/services/`: leitura, filtros, métricas e perfis
 - `src/viz/`: tema e layout
+- `tools/sync_raw_data.py`: copia o ficheiro bruto para `data/raw/` e opcionalmente recompila o dataset tratado
 - `data/raw/Cópia_bd_selo.XLS`: entrada oficial do ETL
 - `data/processed/dashboard_data.csv`: dataset preparado para o dashboard
 - `Inquérito aos Novos Alunos do 3ºCiclo (25-26) - Versão Final_21-04-2025.docx`: guião do questionário
