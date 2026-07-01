@@ -1,11 +1,33 @@
 from __future__ import annotations
 
-import re
-from pathlib import Path
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+
+from src.config.mappings import Q_111, Q_117, Q_124, Q_126, Q_12, Q_13, Q_14, Q_18
+from src.config.settings import (
+    BRAND_BLUE,
+    BRAND_CONTINUOUS_SCALE,
+    BRAND_DISCRETE_SEQUENCE,
+    DATA_FILE,
+    RESPONSE_RATE_NUMERATOR,
+    UNIVERSE_SIZE,
+)
+from src.services.data import (
+    categorical_summary,
+    code_counts,
+    course_options,
+    eligible_mask,
+    filter_data,
+    find_column,
+    format_percentage,
+    load_processed,
+    mean_likert,
+    school_options,
+    split_codes,
+)
+from src.services.profiles import profile_subsections
+from src.viz.layout import apply_blue_theme
 
 
 st.set_page_config(
@@ -13,318 +35,6 @@ st.set_page_config(
     page_icon="📊",
     layout="wide",
 )
-
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_FILE = BASE_DIR / "Cópia_bd_selo.XLS"
-OPEN_ENDED_EXCLUSIONS = {
-    "1-5",
-    "1-7",
-    "1-9",
-    "1-12",
-    "1-14",
-    "1-16",
-    "1-21",
-    "1-23",
-    "1-25",
-    "1-27",
-}
-UNIVERSE_SIZE = 387
-RESPONSE_RATE_NUMERATOR = 281
-BRAND_RGB = (13, 40, 194)
-BRAND_BLUE = f"rgb{BRAND_RGB}"
-
-
-def brand_mix(white_ratio: float) -> str:
-    red, green, blue = BRAND_RGB
-    return f"rgb({round(red * (1 - white_ratio) + 255 * white_ratio)}, {round(green * (1 - white_ratio) + 255 * white_ratio)}, {round(blue * (1 - white_ratio) + 255 * white_ratio)})"
-
-
-BRAND_CONTINUOUS_SCALE = [
-    brand_mix(0.92),
-    brand_mix(0.72),
-    brand_mix(0.46),
-    BRAND_BLUE,
-]
-BRAND_DISCRETE_SEQUENCE = [
-    BRAND_BLUE,
-    brand_mix(0.22),
-    brand_mix(0.42),
-    brand_mix(0.62),
-]
-
-
-Q_111 = {
-    1: "Carreira docente no ensino superior",
-    2: "Trabalhar em investigação",
-    3: "Progressão na carreira profissional",
-    4: "Aprofundar conhecimentos numa área académica específica",
-    5: "Aplicar conhecimentos no contexto profissional",
-    6: "Realização pessoal",
-    7: "Obter mais um grau académico",
-    8: "Assegurar rendimento através de bolsa",
-    9: "Formação numa área diferente da de origem",
-    10: "Encorajamento do/a orientador/a ou coordenador/a",
-    11: "Aumentar as possibilidades de obter emprego qualificado",
-    12: "Outro",
-}
-
-Q_117 = {
-    1: "Sim, integrado na atividade profissional",
-    2: "Sim, integrado num projeto de investigação",
-    3: "Não",
-    4: "Ainda não defini o tema da tese",
-}
-
-Q_124 = {
-    1: "Situação no emprego igual à atual",
-    2: "Progressão de carreira/categoria profissional",
-    3: "Funções mais ajustadas a um nível de qualificação mais elevado",
-    4: "Atividade profissional mais relacionada com a área do doutoramento",
-    5: "Outra situação",
-}
-
-Q_126 = {
-    1: "Ensino Superior",
-    2: "Administração Pública",
-    3: "Empresa privada",
-    4: "Instituição privada sem fins lucrativos",
-    5: "Outro",
-}
-
-Q_12 = {1: "Sim", 2: "Não"}
-Q_13 = {1: "Sim", 2: "Não"}
-Q_14 = {
-    1: "Sim",
-    2: "Não, mas pondero vir a manifestar interesse",
-    3: "Não pondero vir a manifestar interesse",
-}
-Q_18 = {
-    1: "Ensino Superior",
-    2: "Administração Pública",
-    3: "Empresa privada",
-    4: "Instituição privada sem fins lucrativos",
-    5: "Outro setor",
-}
-
-DOUBLE_SCHOOL_COURSES = {
-    "Doutoramento em Economia": ["EG", "ECSH"],
-}
-
-
-def read_data() -> pd.DataFrame:
-    df = pd.read_excel(DATA_FILE)
-    df = df.copy()
-    df.columns = [str(col).strip() for col in df.columns]
-    return df
-
-
-def load_processed() -> pd.DataFrame:
-    df = read_data()
-    df["RESPONDENT_AGE"] = pd.to_numeric(df.get("RESPONDENT_AGE"), errors="coerce")
-    df["ANO_CONCLUSAO_DA_HABILITACAO_ANTERIOR"] = pd.to_numeric(
-        df.get("ANO_CONCLUSAO_DA_HABILITACAO_ANTERIOR"), errors="coerce"
-    )
-    df["NOTA_CONCLUSAO_HABILITACAO_ANTERIOR"] = pd.to_numeric(
-        df.get("NOTA_CONCLUSAO_HABILITACAO_ANTERIOR"), errors="coerce"
-    )
-    return df
-
-
-def eligible_questions(df: pd.DataFrame) -> list[str]:
-    question_columns = [col for col in df.columns if col.startswith("1-")]
-    eligible = [
-        col
-        for col in question_columns
-        if col.split()[0] not in OPEN_ENDED_EXCLUSIONS and col not in OPEN_ENDED_EXCLUSIONS
-    ]
-    return eligible
-
-
-def eligible_mask(df: pd.DataFrame, minimum_ratio: float = 0.75) -> pd.Series:
-    questions = eligible_questions(df)
-    if not questions:
-        return pd.Series(True, index=df.index)
-    coverage = df[questions].replace(r"^\s*$", pd.NA, regex=True).notna().mean(axis=1)
-    return coverage >= minimum_ratio
-
-
-def split_codes(value: object) -> list[int]:
-    if pd.isna(value):
-        return []
-    matches = re.findall(r"\d+", str(value))
-    return [int(match) for match in matches]
-
-
-def split_school_codes(value: object) -> list[str]:
-    if pd.isna(value):
-        return []
-    parts = re.split(r"[;,]", str(value))
-    return [part.strip() for part in parts if part.strip()]
-
-
-def find_column(df: pd.DataFrame, prefix: str) -> str:
-    if prefix in df.columns:
-        return prefix
-    matches = [col for col in df.columns if str(col).startswith(prefix)]
-    if not matches:
-        raise KeyError(f"Column starting with {prefix!r} was not found")
-    return matches[0]
-
-
-def schools_for_course(course: str, raw_value: object) -> list[str]:
-    schools = split_school_codes(raw_value)
-    if schools:
-        return schools
-    return DOUBLE_SCHOOL_COURSES.get(course, [])
-
-
-def school_options(df: pd.DataFrame) -> list[str]:
-    schools: set[str] = set()
-    for _, row in df.iterrows():
-        schools.update(schools_for_course(str(row.get("NOME_CURSO", "")), row.get("ESCOLAS_CURSO")))
-    return sorted(schools)
-
-
-def course_options(df: pd.DataFrame, selected_school: str | None) -> list[str]:
-    filtered = df
-    if selected_school:
-        filtered = filtered[
-            filtered.apply(
-                lambda row: selected_school in schools_for_course(str(row["NOME_CURSO"]), row.get("ESCOLAS_CURSO")),
-                axis=1,
-            )
-        ]
-    return sorted(filtered["NOME_CURSO"].dropna().astype(str).unique().tolist())
-
-
-def filter_data(df: pd.DataFrame, selected_school: str | None, selected_course: str | None) -> pd.DataFrame:
-    filtered = df.copy()
-    if selected_school:
-        filtered = filtered[
-            filtered.apply(
-                lambda row: selected_school in schools_for_course(str(row["NOME_CURSO"]), row.get("ESCOLAS_CURSO")),
-                axis=1,
-            )
-        ]
-    if selected_course:
-        filtered = filtered[filtered["NOME_CURSO"].astype(str) == selected_course]
-    return filtered
-
-
-def format_percentage(value: float) -> str:
-    return f"{value:.1f}%"
-
-
-def categorical_summary(series: pd.Series, drop_missing: bool = True) -> pd.DataFrame:
-    clean = series.copy()
-    if drop_missing:
-        clean = clean.replace({"nan": pd.NA, "None": pd.NA, "": pd.NA}).dropna()
-    counts = clean.astype(str).value_counts().reset_index()
-    counts.columns = ["Categoria", "Respostas"]
-    total = counts["Respostas"].sum()
-    counts["Percentagem"] = (counts["Respostas"] / total * 100).round(1) if total else 0
-    return counts
-
-
-def code_counts(series: pd.Series, mapping: dict[int, str]) -> pd.DataFrame:
-    codes = series.map(split_codes)
-    exploded = codes.explode().dropna()
-    if exploded.empty:
-        return pd.DataFrame({"Opção": list(mapping.values()), "Respostas": [0] * len(mapping)})
-    counts = exploded.astype(int).value_counts().reindex(mapping.keys(), fill_value=0).reset_index()
-    counts.columns = ["Código", "Respostas"]
-    counts["Opção"] = counts["Código"].map(mapping)
-    counts = counts[["Opção", "Respostas"]]
-    total = counts["Respostas"].sum()
-    counts["Percentagem"] = (counts["Respostas"] / total * 100).round(1) if total else 0
-    return counts
-
-
-def mean_likert(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
-    rows = []
-    for column in columns:
-        numeric = pd.to_numeric(df[column], errors="coerce")
-        numeric = numeric.mask(numeric == 66)
-        mean_value = round(float(numeric.mean()), 2) if numeric.notna().any() else 0.0
-        label = column.split(" ", 1)[0]
-        rows.append({"Indicador": label, "Média": mean_value})
-    result = pd.DataFrame(rows)
-    if not result.empty:
-        result = result.sort_values("Média", ascending=True).reset_index(drop=True)
-    return result
-
-
-def apply_blue_theme() -> None:
-    theme_css = """
-        <style>
-        :root {
-            --brand: __BRAND_BLUE__;
-            --brand-soft: rgba(13, 40, 194, 0.10);
-            --brand-softer: rgba(13, 40, 194, 0.06);
-            --ink: #0f172a;
-            --muted: #475569;
-            --card: #ffffff;
-            --border: rgba(15, 23, 42, 0.08);
-        }
-        .stApp {
-            background:
-                radial-gradient(circle at top left, rgba(13, 40, 194, 0.08), transparent 30%),
-                linear-gradient(180deg, #f8fbff 0%, #ffffff 45%, #f6f9ff 100%);
-            color: var(--ink);
-        }
-        [data-testid="stHeader"] {
-            background: transparent;
-        }
-        .hero {
-            padding: 1.4rem 1.5rem;
-            border: 1px solid var(--border);
-            border-radius: 22px;
-            background: linear-gradient(135deg, rgba(13, 40, 194, 0.97), rgba(13, 40, 194, 0.78));
-            color: white;
-            box-shadow: 0 18px 40px rgba(13, 40, 194, 0.16);
-            margin-bottom: 1rem;
-        }
-        .hero h1 {
-            margin: 0;
-            font-size: 2rem;
-            line-height: 1.1;
-        }
-        .hero p {
-            margin: 0.4rem 0 0;
-            opacity: 0.92;
-            max-width: 900px;
-        }
-        .section-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 0.5rem;
-        }
-        div[data-baseweb="select"] > div {
-            border-radius: 14px;
-        }
-        div[data-testid="stMetric"] {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 0.8rem 0.9rem;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-        }
-        div[data-testid="stMetricLabel"] {
-            font-size: 0.75rem;
-            line-height: 1.1;
-        }
-        div[data-testid="stMetricValue"] {
-            font-size: 1.05rem;
-            line-height: 1.05;
-        }
-        div[data-testid="stMetricValue"] svg {
-            display: none;
-        }
-        </style>
-        """.replace("__BRAND_BLUE__", BRAND_BLUE)
-    st.markdown(theme_css, unsafe_allow_html=True)
 
 
 def metric_box(label: str, value: str, help_text: str | None = None) -> None:
@@ -337,7 +47,11 @@ def render_charts(df: pd.DataFrame) -> None:
         metric_box("Respostas válidas", f"{len(df)}")
     with top_metrics[1]:
         response_rate = RESPONSE_RATE_NUMERATOR / UNIVERSE_SIZE * 100
-        metric_box("Taxa de resposta", format_percentage(response_rate), "281 respostas válidas no critério de 75% de preenchimento do questionário, sobre um total de 387 de novos estudantes de doutoramento")
+        metric_box(
+            "Taxa de resposta",
+            format_percentage(response_rate),
+            "281 respostas válidas no critério de 75% de preenchimento do questionário, sobre um total de 387 de novos estudantes de doutoramento",
+        )
     with top_metrics[2]:
         school_count = df["NOME_CURSO"].nunique()
         metric_box("Cursos representados", f"{school_count}")
@@ -432,7 +146,7 @@ def render_charts(df: pd.DataFrame) -> None:
             fig.update_traces(
                 textposition="outside",
                 customdata=occupation_counts[["Respostas", "Percentagem"]],
-                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             fig.update_layout(
                 margin=dict(l=0, r=0, t=50, b=0),
@@ -460,7 +174,7 @@ def render_charts(df: pd.DataFrame) -> None:
             fig.update_traces(
                 textposition="outside",
                 customdata=sector_counts[["Respostas"]],
-                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<extra></extra>"
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<extra></extra>",
             )
             fig.update_layout(
                 margin=dict(l=0, r=0, t=50, b=0),
@@ -477,7 +191,7 @@ def render_charts(df: pd.DataFrame) -> None:
             x="Percentagem",
             y="Categoria",
             orientation="h",
-                color_discrete_sequence=[BRAND_BLUE],
+            color_discrete_sequence=[BRAND_BLUE],
             title="Principais nacionalidades",
         )
         nationality_fig.update_traces(
@@ -515,7 +229,7 @@ def render_charts(df: pd.DataFrame) -> None:
             fig.update_traces(
                 textposition="outside",
                 customdata=q2_counts[["Respostas", "Percentagem"]],
-                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
             st.plotly_chart(fig, width="stretch")
@@ -539,7 +253,7 @@ def render_charts(df: pd.DataFrame) -> None:
             fig.update_traces(
                 textposition="outside",
                 customdata=q3_counts[["Respostas", "Percentagem"]],
-                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
             st.plotly_chart(fig, width="stretch")
@@ -563,11 +277,10 @@ def render_charts(df: pd.DataFrame) -> None:
             fig.update_traces(
                 textposition="outside",
                 customdata=q4_counts[["Respostas", "Percentagem"]],
-                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>"
+                hovertemplate="<b>%{y}</b><br>N=%{customdata[0]}<br>%{customdata[1]}%<extra></extra>",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", coloraxis_showscale=False, xaxis=dict(range=[0, 100]), xaxis_title="%", font=dict(size=11))
             st.plotly_chart(fig, width="stretch")
-
 
     with tab2:
         q11_col = find_column(df, "1-11")
@@ -594,7 +307,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 orientation="h",
                 x="Percentagem",
                 color="Destaque",
-                color_discrete_sequence=[BRAND_BLUE, brand_mix(0.42)],
+                color_discrete_sequence=[BRAND_BLUE, "rgb(98, 131, 230)"],
                 title="Principais motivos para iniciar o doutoramento",
             )
             fig.update_traces(
@@ -615,7 +328,7 @@ def render_charts(df: pd.DataFrame) -> None:
             x="Média",
             y="Indicador",
             orientation="h",
-                color_discrete_sequence=[BRAND_BLUE],
+            color_discrete_sequence=[BRAND_BLUE],
             title="Fatores na escolha do Iscte",
         )
         fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 5]))
@@ -628,7 +341,7 @@ def render_charts(df: pd.DataFrame) -> None:
             x="Média",
             y="Indicador",
             orientation="h",
-                color_discrete_sequence=[BRAND_BLUE],
+            color_discrete_sequence=[BRAND_BLUE],
             title="Fatores na escolha do curso",
         )
         fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), yaxis_title="", xaxis=dict(range=[0, 5]))
@@ -707,7 +420,7 @@ def render_charts(df: pd.DataFrame) -> None:
                 q17_counts,
                 names="Opção",
                 values="Respostas",
-                color_discrete_sequence=BRAND_DISCRETE_SEQUENCE + [brand_mix(0.78)],
+                color_discrete_sequence=BRAND_DISCRETE_SEQUENCE + ["rgb(170, 188, 245)"],
                 title="Integração do projeto de tese",
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0))
@@ -739,69 +452,6 @@ def render_charts(df: pd.DataFrame) -> None:
             )
             fig.update_layout(margin=dict(l=0, r=0, t=50, b=0), xaxis_title="", yaxis_title="")
             st.plotly_chart(fig, width="stretch")
-
-
-def typical_profile(df: pd.DataFrame) -> dict[str, str]:
-    age_bins = [18, 24, 29, 34, 39, 44, 49, 59, 100]
-    age_labels = ["18-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-59", "60+"]
-    age_bucket = pd.cut(df["RESPONDENT_AGE"], bins=age_bins, labels=age_labels, right=True, include_lowest=True)
-    age_mode = age_bucket.value_counts().index[0] if not age_bucket.dropna().empty else "-"
-
-    def modal_value(column: str) -> str:
-        series = df[column].replace({"nan": pd.NA, "None": pd.NA}).dropna()
-        if series.empty:
-            return "-"
-        return str(series.astype(str).value_counts().index[0])
-
-    return {
-        "género": modal_value("RESPONDENT_GENDER"),
-        "faixa_etária": str(age_mode),
-        "nacionalidade": modal_value("NACIONALIDADE_1"),
-        "situação profissional": modal_value("CONDICAO_PROFISSIONAL_ALUNO"),
-        "setor profissional": modal_value("SCHOLARSHIP_GRANT_OWNER"),
-    }
-
-
-def profile_subsections(df: pd.DataFrame) -> dict[str, list[tuple[str, str]]]:
-    def first_category(column: str) -> str:
-        counts = categorical_summary(df[column], drop_missing=True)
-        if counts.empty:
-            return "-"
-        first = counts.iloc[0]
-        return f"{first['Categoria']} ({first['Percentagem']}%)"
-
-    def coded_category(column: str, mapping: dict[int, str]) -> str:
-        counts = code_counts(df[column], mapping)
-        if counts.empty:
-            return "-"
-        first = counts.iloc[0]
-        total = counts["Respostas"].sum()
-        percentage = round(first["Respostas"] / total * 100, 1) if total else 0
-        return f"{first['Opção']} ({percentage}%)"
-
-    age_bins = [18, 24, 29, 34, 39, 44, 49, 59, 100]
-    age_labels = ["18-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-59", "60+"]
-    age_bucket = pd.cut(df["RESPONDENT_AGE"], bins=age_bins, labels=age_labels, right=True, include_lowest=True)
-    age_counts = age_bucket.value_counts().reset_index()
-    age_counts.columns = ["Categoria", "Respostas"]
-    age_counts["Percentagem"] = (age_counts["Respostas"] / age_counts["Respostas"].sum() * 100).round(1)
-    age_mode = age_counts.iloc[0] if not age_counts.empty else None
-
-    sociodemografico = [
-        ("Género", first_category("RESPONDENT_GENDER")),
-        ("Idade", f"{age_mode['Categoria']} ({age_mode['Percentagem']}%)" if age_mode is not None else "-"),
-        ("Nacionalidade", first_category("NACIONALIDADE_1")),
-    ]
-
-    profissional = [
-        ("Situação profissional", first_category("CONDICAO_PROFISSIONAL_ALUNO")),
-        ("Setor de trabalho", coded_category(find_column(df, "1-8"), Q_18)),
-    ]
-
-    return {
-        "sociodemográfico": sociodemografico,
-        "profissional": profissional,
-    }
 
 
 def main() -> None:

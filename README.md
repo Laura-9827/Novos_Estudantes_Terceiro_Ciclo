@@ -2,6 +2,8 @@
 
 Aplicação Streamlit para explorar os resultados do inquérito aos novos estudantes do 3.º ciclo de 2025/2026.
 
+O código foi separado em módulos: `app.py` funciona como ponto de entrada, `src/services/` concentra a lógica de dados e regras, `src/config/` guarda mapeamentos e parâmetros, e `src/viz/` trata da aparência.
+
 ## Como executar
 
 1. Instalar dependências:
@@ -25,6 +27,9 @@ Ao selecionar uma escola, os gráficos passam a refletir apenas os dados dessa e
 
 ## Ficheiros principais
 
-- `app.py`: dashboard principal
+- `app.py`: ponto de entrada do dashboard
+- `src/config/`: constantes e mapeamentos
+- `src/services/`: leitura, filtros, métricas e perfis
+- `src/viz/`: tema e layout
 - `Cópia_bd_selo.XLS`: base de respostas
 - `Inquérito aos Novos Alunos do 3ºCiclo (25-26) - Versão Final_21-04-2025.docx`: guião do questionário
