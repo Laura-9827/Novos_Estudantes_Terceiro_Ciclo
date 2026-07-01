@@ -9,8 +9,8 @@ from src.config.settings import (
     BRAND_BLUE,
     BRAND_CONTINUOUS_SCALE,
     BRAND_DISCRETE_SEQUENCE,
-    DATA_FILE,
     RESPONSE_RATE_NUMERATOR,
+    RAW_DATA_FILE,
     UNIVERSE_SIZE,
 )
 from src.etl.pipeline import load_or_build_processed
@@ -456,8 +456,8 @@ def render_charts(df: pd.DataFrame) -> None:
 
 
 def main() -> None:
-    if not DATA_FILE.exists():
-        st.error(f"Não foi encontrado o ficheiro de dados: {DATA_FILE.name}")
+    if not RAW_DATA_FILE.exists():
+        st.error(f"Não foi encontrado o ficheiro de dados: {RAW_DATA_FILE.name}")
         st.stop()
 
     apply_blue_theme()

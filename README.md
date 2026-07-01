@@ -4,7 +4,7 @@ Aplicação Streamlit para explorar os resultados do inquérito aos novos estuda
 
 O código foi separado em módulos: `app.py` funciona como ponto de entrada, `src/services/` concentra a lógica de dados e regras, `src/config/` guarda mapeamentos e parâmetros, e `src/viz/` trata da aparência.
 
-Há também uma camada ETL leve em `src/etl/` que lê o ficheiro bruto e gera `data/processed/dashboard_data.csv`. O dashboard passa a consumir esse ficheiro tratado.
+Há também uma camada ETL leve em `src/etl/` que lê o ficheiro bruto em `data/raw/` e gera `data/processed/dashboard_data.csv`. O dashboard passa a consumir esse ficheiro tratado.
 
 ## Como executar
 
@@ -40,6 +40,6 @@ Ao selecionar uma escola, os gráficos passam a refletir apenas os dados dessa e
 - `src/config/`: constantes e mapeamentos
 - `src/services/`: leitura, filtros, métricas e perfis
 - `src/viz/`: tema e layout
+- `data/raw/Cópia_bd_selo.XLS`: entrada oficial do ETL
 - `data/processed/dashboard_data.csv`: dataset preparado para o dashboard
-- `Cópia_bd_selo.XLS`: base de respostas
 - `Inquérito aos Novos Alunos do 3ºCiclo (25-26) - Versão Final_21-04-2025.docx`: guião do questionário

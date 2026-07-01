@@ -4,18 +4,18 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.config.settings import DATA_FILE, PROCESSED_DATA_FILE, RAW_DATA_FILE
+from src.config.settings import PROCESSED_DATA_FILE, RAW_DATA_FILE
 from src.services.data import split_codes, split_school_codes
 
 
 def _source_file() -> Path:
-    if RAW_DATA_FILE.exists():
-        return RAW_DATA_FILE
-    return DATA_FILE
+    return RAW_DATA_FILE
 
 
 def extract_raw() -> pd.DataFrame:
     source_file = _source_file()
+    if not source_file.exists():
+        raise FileNotFoundError(f"Raw data file not found: {source_file}")
     df = pd.read_excel(source_file)
     df = df.copy()
     df.columns = [str(col).strip() for col in df.columns]
@@ -53,7 +53,7 @@ def load_or_build_processed(force: bool = False) -> pd.DataFrame:
 
     processed_mtime = PROCESSED_DATA_FILE.stat().st_mtime
     source_file = _source_file()
-    if source_file.stat().st_mtime > processed_mtime:
+    if source_file.exists() and source_file.stat().st_mtime > processed_mtime:
         processed = transform_data(extract_raw())
         processed.to_csv(PROCESSED_DATA_FILE, index=False)
         return processed
