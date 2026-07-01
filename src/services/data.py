@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pandas as pd
 
 from src.config.mappings import DOUBLE_SCHOOL_COURSES
-from src.config.settings import DATA_FILE
+from src.config.settings import PROCESSED_DATA_FILE
 
 
 OPEN_ENDED_EXCLUSIONS = {
@@ -22,22 +23,8 @@ OPEN_ENDED_EXCLUSIONS = {
 }
 
 
-def read_data() -> pd.DataFrame:
-    df = pd.read_excel(DATA_FILE)
-    df = df.copy()
-    df.columns = [str(col).strip() for col in df.columns]
-    return df
-
-
 def load_processed() -> pd.DataFrame:
-    df = read_data()
-    df["RESPONDENT_AGE"] = pd.to_numeric(df.get("RESPONDENT_AGE"), errors="coerce")
-    df["ANO_CONCLUSAO_DA_HABILITACAO_ANTERIOR"] = pd.to_numeric(
-        df.get("ANO_CONCLUSAO_DA_HABILITACAO_ANTERIOR"), errors="coerce"
-    )
-    df["NOTA_CONCLUSAO_HABILITACAO_ANTERIOR"] = pd.to_numeric(
-        df.get("NOTA_CONCLUSAO_HABILITACAO_ANTERIOR"), errors="coerce"
-    )
+    df = pd.read_csv(PROCESSED_DATA_FILE)
     return df
 
 

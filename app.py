@@ -13,6 +13,7 @@ from src.config.settings import (
     RESPONSE_RATE_NUMERATOR,
     UNIVERSE_SIZE,
 )
+from src.etl.pipeline import load_or_build_processed
 from src.services.data import (
     categorical_summary,
     code_counts,
@@ -460,6 +461,8 @@ def main() -> None:
         st.stop()
 
     apply_blue_theme()
+
+    load_or_build_processed()
 
     df = load_processed()
     eligible = df[eligible_mask(df, 0.75)].copy()

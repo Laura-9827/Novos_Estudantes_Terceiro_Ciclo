@@ -5,6 +5,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_FILE = BASE_DIR / "Cópia_bd_selo.XLS"
+RAW_DATA_FILE = BASE_DIR / "data" / "raw" / "Cópia_bd_selo.XLS"
+PROCESSED_DATA_FILE = BASE_DIR / "data" / "processed" / "dashboard_data.csv"
 UNIVERSE_SIZE = 387
 RESPONSE_RATE_NUMERATOR = 281
 BRAND_RGB = (13, 40, 194)
